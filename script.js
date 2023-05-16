@@ -1,6 +1,3 @@
-// Constants
-const apiKey = 'YOUR_API_KEY'; // Replace with your actual API key
-
 // DOM Elements
 const toggleMode = document.getElementById('toggle-mode');
 const searchInput = document.getElementById('search-input');
@@ -16,11 +13,11 @@ function toggleDarkMode() {
   document.body.classList.toggle('dark-mode');
 }
 
-// Search weather for a city
+// Search weather for a location
 function searchWeather() {
-  const city = searchInput.value.trim();
-  if (city !== '') {
-    getWeather(city)
+  const location = searchInput.value.trim();
+  if (location !== '') {
+    getWeather(location)
       .then(data => {
         displayForecast(data);
       })
@@ -31,8 +28,9 @@ function searchWeather() {
 }
 
 // Fetch weather data from API
-async function getWeather(city) {
-  const apiUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${apiKey}`;
+async function getWeather(location) {
+  const apiKey = '9129O8AdFXPSJB1VGWuEFeHaLQd7xLRa';
+  const apiUrl = `https://api.tomorrow.io/v4/timelines?location=${location}&fields=temperature&timesteps=1h&units=metric&apikey=${apiKey}`;
   const response = await fetch(apiUrl);
   if (response.ok) {
     const data = await response.json();
@@ -46,9 +44,13 @@ async function getWeather(city) {
 function displayForecast(data) {
   forecastContainer.innerHTML = '';
 
-  for (let i = 0; i < data.list.length; i += 8) {
-    const forecast = data.list[i];
-    const date = new Date(forecast.dt_txt);
+  const temperatureTimeline = data.data.timelines.temperature;
+
+  for (let i = 0; i < temperatureTimeline.length; i++) {
+    const timestamp = temperatureTimeline[i].time;
+    const temperature = temperatureTimeline[i].value;
+
+    const date = new Date(timestamp);
     const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' });
 
     const card = document.createElement('div');
@@ -58,14 +60,10 @@ function displayForecast(data) {
     dateElement.textContent = dayOfWeek;
 
     const temperatureElement = document.createElement('p');
-    temperatureElement.textContent = `Temperature: ${forecast.main.temp}°C`;
-
-    const descriptionElement = document.createElement('p');
-    descriptionElement.textContent = `Description: ${forecast.weather[0].description}`;
+    temperatureElement.textContent = `Temperature: ${temperature}°C`;
 
     card.appendChild(dateElement);
     card.appendChild(temperatureElement);
-    card.appendChild(descriptionElement);
 
     forecastContainer.appendChild(card);
   }
